@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Books.API.Entities
+namespace Books.Domain.Entities
 {
     [Table("Books")]
     public class Book
@@ -37,9 +37,9 @@ namespace Books.API.Entities
 
         
 
-        public Book(Guid guid, Guid authorId, string? title, string? description)
+        public Book(Guid id, Guid authorId, string? title, string? description)
         { 
-            Id = guid;
+            Id = id;
             Title = title;
             Description = description;
             AuthorId = authorId;

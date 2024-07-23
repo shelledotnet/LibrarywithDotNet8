@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Books.API.Entities
+namespace Books.Domain.Entities
 {
 
     [Table("Authors")]
@@ -25,9 +25,9 @@ namespace Books.API.Entities
         public DateTime CreatedDdate { get; set; }
 
 
-        public Author(Guid guid,string? firstName,string? lastName)
+        public Author(Guid id,string? firstName,string? lastName)
         {
-            Id = guid;
+            Id = id;
             FirstName = firstName;
             LastName = lastName;
         }
