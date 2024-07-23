@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Books.API", "Books.API\Books.API.csproj", "{C4B3DE6B-9A39-4283-87BA-B1AFB7724708}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Books.API", "Books.API\Books.API.csproj", "{C4B3DE6B-9A39-4283-87BA-B1AFB7724708}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Books.Domain", "Books.Domain\Books.Domain.csproj", "{739BB92D-4746-4FB3-B5DC-F29C0E1CBA0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{C4B3DE6B-9A39-4283-87BA-B1AFB7724708}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4B3DE6B-9A39-4283-87BA-B1AFB7724708}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4B3DE6B-9A39-4283-87BA-B1AFB7724708}.Release|Any CPU.Build.0 = Release|Any CPU
+		{739BB92D-4746-4FB3-B5DC-F29C0E1CBA0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{739BB92D-4746-4FB3-B5DC-F29C0E1CBA0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{739BB92D-4746-4FB3-B5DC-F29C0E1CBA0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{739BB92D-4746-4FB3-B5DC-F29C0E1CBA0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
