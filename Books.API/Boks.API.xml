@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Books.API</name>
+    </assembly>
+    <members>
+        <member name="M:Books.API.Controllers.BooksController.GetBooks">
+            <summary>
+            Get all character
+            </summary>
+            <returns>A List of Characters</returns>
+            <response code="200">A List of Characters</response>
+        </member>
+    </members>
+</doc>

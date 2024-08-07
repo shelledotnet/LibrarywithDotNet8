@@ -15,7 +15,7 @@ namespace Books.API.Extensions
         public static ServiceBadResponse GetApiResponse(this ModelStateDictionary dictionary)
         {
 
-            return new ServiceBadResponse { IsSuccess = false, Message =  GetErrorMessages(dictionary) };
+            return new ServiceBadResponse { IsSuccess = false, Message = GetErrorMessages(dictionary), Code = 400 };
 
 
         }

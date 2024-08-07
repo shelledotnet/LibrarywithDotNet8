@@ -28,13 +28,13 @@ namespace Books.Domain.Models
         public string? SearchQuery { get; set; }
 
         [Required(AllowEmptyStrings = false)]
-        public string? Ok { get; set; }
+        public int Ok { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? FilterQquery { get; set; }
 
         [Required(AllowEmptyStrings = false)]
-        public string? NotFound { get; set; }
+        public int NotFound { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? Conflict { get; set; }
@@ -66,6 +66,8 @@ namespace Books.Domain.Models
         [Required(AllowEmptyStrings = false)]
         public string? IsSuccess { get; set; }
 
+        [Required(AllowEmptyStrings = false)]
+        public string? IsFail { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? OrderBadRequest { get; set; }
@@ -126,12 +128,22 @@ namespace Books.Domain.Models
         [Required(AllowEmptyStrings = false)]
         public string[]? UserStatus { get; set; }
 
+        [Required(AllowEmptyStrings = false)]
+        public int BadRequest { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string? BadRequestDescription { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string? NOtFoundDescription { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string? ClientIdIdMaxLength { get; set; }
 
 
-
-
-
-
+        [Required(AllowEmptyStrings = false)]
+        public string? CorrelationIdMaxLength { get; set; }
+        
         #region MyRegion
         //[Required(AllowEmptyStrings = false)]
         //public string? Version { get; set; }

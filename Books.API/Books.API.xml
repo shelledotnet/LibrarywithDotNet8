@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Books.API</name>
+    </assembly>
+    <members>
+        <member name="M:Books.API.Controllers.BooksController.GetBooks">
+            <summary>
+            Get all books
+            </summary>
+            <returns>A List of books</returns>
+            <response code="200">A List of books</response>
+        </member>
+        <member name="M:Books.API.Controllers.BooksController.GetBookById(Books.Domain.Models.BooksId)">
+            <summary>
+            Get all books
+            </summary>
+            <returns>A List of books</returns>
+            <response code="200">A List of books</response>
+        </member>
+    </members>
+</doc>
