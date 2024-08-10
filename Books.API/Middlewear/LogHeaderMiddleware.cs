@@ -22,8 +22,6 @@ namespace Books.API.Middlewear
 
 
 
-
-
         #region MyRegion
         public async Task Invoke(HttpContext context)
         {
@@ -45,8 +43,8 @@ namespace Books.API.Middlewear
                 }
                 context.Response.Headers.Append("x-correlation-id", correlationId);
 
-                string clientId = context.Request.Headers.Keys.FirstOrDefault(n => n.ToLower().Equals("client_id"));
-                string productId = context.Request.Headers.Keys.FirstOrDefault(n => n.ToLower().Equals("product_id"));
+                string clientId = GetHeaderValue("client_id", context);
+                string productId = GetHeaderValue("product_id", context);
 
                 context.Response.Headers.Append("client_id", clientId);
                 context.Response.Headers.Append("product_id", productId);
@@ -75,12 +73,18 @@ namespace Books.API.Middlewear
 
 
             }
-            
-             return context.Request.Headers[value];
+            else
+            {
+                context.Request.Headers.Append(key, "");
 
+            }
+
+            return "";
 
         }
         #endregion
+
+
     }
 
 

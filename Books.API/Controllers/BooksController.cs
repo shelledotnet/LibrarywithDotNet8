@@ -9,6 +9,7 @@ using Books.Domain.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.ComponentModel;
 using System.Net;
 
 namespace Books.API.Controllers;
@@ -181,13 +182,13 @@ public class BooksController : ControllerBase
     [HttpGet("{manufacture}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ProductDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
-    public IActionResult Manufacture([FromRoute(Name = "manufacture")] string brand, [FromQuery(Name = "coverage")] int warrantyYears)
+    public IActionResult Manufacture([FromRoute(Name = "manufacture")][DefaultValue("sony")] string brand, [FromQuery(Name = "coverage")][DefaultValue(2)] int warrantyYears)
     {
         try
         {
             ServiceResponse<ProductDto> response = new();
             
-            ProductDto prd = _mapper.Map<ProductDto>(_products.First(x => x.Brand.Equals(brand, StringComparison.CurrentCultureIgnoreCase) && x.WarrantyYears == warrantyYears));
+            ProductDto prd = _mapper.Map<ProductDto>(_products.FirstOrDefault(x => x.Brand.Equals(brand, StringComparison.CurrentCultureIgnoreCase) && x.WarrantyYears == warrantyYears));
 
             if (prd != null)
             {
@@ -197,7 +198,10 @@ public class BooksController : ControllerBase
                 return Ok(response);
 
             }
-            return NotFound(_mapper.Map<ServiceFailedResponse>(response));
+            ServiceFailedResponse res = _mapper.Map<ServiceFailedResponse>(response);
+            res.Message = "product not found";
+            res.IsSuccess = false;
+            return NotFound(res);
         }
         catch (Exception ex)
         {
@@ -206,6 +210,41 @@ public class BooksController : ControllerBase
             return StatusCode(500, serviceResponse);
         }
     }
+
+
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [HttpGet]
+    public IActionResult Products()
+    {
+
+        try
+        {
+
+
+            if (_products.Count > 0)
+                return Ok(new ServiceFailedResponse { Code = 400, Message = "success" });
+            return NotFound(new ServiceFailedResponse { Code = 400, Message = "success" });
+        }
+        catch (Exception ex)
+        {
+
+            _logger.LogError($"{ex}");
+            ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+            return StatusCode(500, serviceResponse);
+        }
+    }
+
+
+    [HttpPatch("UpdateAppointmentRequest{id:guid}")]
+    public async Task<IActionResult> Update(Guid id,
+        [FromHeader(Name = "If-Match")] string? ifMatch, CancellationToken cancellationToken = default)
+    {
+        ServiceResponse<string> response = new();
+        response.Data = $"User created successfully! {id}";
+        response.Message= "success";
+        return Ok(response);
+    }
+
 
 }
 

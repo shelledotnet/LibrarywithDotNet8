@@ -5,10 +5,11 @@ using Books.domain.Models;
 using Books.Domain.Models;
 using Microsoft.Extensions.Options;
 using Books.Domain.Service;
+using System.Text.RegularExpressions;
 
 namespace Books.API.Filter;
 
-public class RequestAuthActionFilter : IActionFilter
+public partial class RequestAuthActionFilter : IActionFilter
 {
     private readonly ProjectOptions _projectOptions;
     private readonly IClientHeader _clientHeader;
@@ -30,6 +31,17 @@ public class RequestAuthActionFilter : IActionFilter
         string clientIdentifier = null;
         string correlationId = null;
 
+
+        if (headers.TryGetValue("product_id", out Microsoft.Extensions.Primitives.StringValues value) && IsXXSString(value))
+        {
+            
+                var output = new ServiceFailedResponse() { Code = 400, Message = $"invalid value of product_id" };
+                context.Result = new BadRequestObjectResult(output);
+                return;
+        }
+
+
+
         if (!headers.ContainsKey("client_id"))
         {
             var output = new ServiceFailedResponse() { Code = 400, Message = "Header, 'client_id', is requred" };
@@ -48,6 +60,14 @@ public class RequestAuthActionFilter : IActionFilter
             }
             else
             {
+
+                if (IsXXSString(clientIdentifier))
+                {
+                    var output = new ServiceFailedResponse() { Code = 400, Message = $"invalid value of client_id" };
+                    context.Result = new BadRequestObjectResult(output);
+                    return;
+                }
+
                 
                 int.TryParse(_projectOptions.ClientIdIdMaxLength, out int clientIdIdMaxLength);
                 if (clientIdentifier.Length > clientIdIdMaxLength)
@@ -97,7 +117,8 @@ public class RequestAuthActionFilter : IActionFilter
         }
         
         _clientHeader.clientId(clientIdentifier.Trim());
-        _clientHeader.correlationId(correlationId.Trim());
+        _clientHeader.correlationId(correlationId?.Trim());
+
         // this is better to use as global but i have already used the above in a lot of places so it won't be easy changing it to below...//
         Environment.SetEnvironmentVariable("clientId", clientIdentifier.Trim());
         Environment.SetEnvironmentVariable("correlationId", correlationId.Trim());
@@ -110,12 +131,22 @@ public class RequestAuthActionFilter : IActionFilter
     {
         //this method will be executed after an action method has executed 
     }
-    private bool IsGUID(string str)
+    private static bool IsGUID(string str)
     {
         if (Guid.TryParse(str, out Guid xCorrelationId))
             return true;
         return false;
     }
+    public bool IsXXSString(string str)
+    {
+        if (Validate().Match(str.Trim()).Success)
+            return true;
+        return false;
+
+    }
+
+    [GeneratedRegex(@"[^\w\.-]")]
+    private static partial Regex Validate();
 }
 
 
