@@ -1,6 +1,12 @@
+using AccountInquiry.API.Extensions;
+using Books.API.AttributeUsed;
 using Books.API.Extensions;
+using Books.API.Filter;
+using Books.API.Filters;
 using Books.Domain.DbContexts;
 using Books.Domain.Models;
+using Books.Domain.Service;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Reflection;
@@ -61,7 +67,7 @@ try
 
         options.SuppressModelStateInvalidFilter = true;
     });//for custom message  different from the workload
-
+    builder.Services.AddScoped<IClientHeader, ClientHeader>();
 
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
@@ -87,12 +93,12 @@ try
         });
         c.AddSwaggerApiKeySecurity();
         c.AddSwaggerApiKeyAuthorization();
+        c.OperationFilter<CustomHeaderSwaggerAttribute>();
 
         var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         c.IncludeXmlComments(xmlPath);
     });
-
 
     builder.Services.AddOptions<ProjectOptions>()
                   .BindConfiguration(nameof(ProjectOptions))
@@ -112,7 +118,18 @@ try
                       .AllowAnyHeader());
     });
     builder.Services.AddDbContextFactory<BookContext>(
-   opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("BooksConnection")));
+    opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("BooksConnection")));
+    //please note ensure to create a class that inherit IDesignTimeDbContextFactory<BookContext>
+
+    builder.Services.AddAutoMapper(typeof(Program).Assembly);
+    builder.Services.AddScoped<IBooksRepository, BooksRepository>();
+    builder.Services.AddApiVersioning(option =>
+    {
+        option.AssumeDefaultVersionWhenUnspecified = true;
+        option.DefaultApiVersion = new ApiVersion(1, 0);
+        option.ReportApiVersions = true;
+    });
+    builder.Services.AddScoped<RequestAuthActionFilter>();
     #endregion
 
     #region Middlewear HttpRequest Lands  here this Listent to HttpRequest hirachichally (is the link btw Clients and Server)
@@ -166,6 +183,7 @@ try
     app.UseCorrelationId();
     app.UseHttpsRedirection();
     app.UseCors();//add this after UserRouting and before UseEndpoints  or UseAuthorization();
+    app.UseMiddleware(typeof(CustomResponseHeaderMiddleware));
     app.UseRequesResponse();
     app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = LogHelper.EnrichFromRequest);
     app.UseResponseCaching();//this-to-be-added-b4-app.MapControllers()

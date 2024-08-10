@@ -63,13 +63,13 @@ namespace Books.API.AttributeUsed
             }
             catch (FormatException fx)
             {
-                Log.Fatal(fx, "DotNet-RPG failed to start corretly , ApiKeyName");
+                Log.Fatal(fx, "Books-RPG failed to start corretly , ApiKeyName");
                 ServiceFailedResponse response = new() { Message = "The header input value is not a valid Base-64 string", IsSuccess = false };
                 context.Result = new UnauthorizedObjectResult(response);
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "DotNet-RPG failed to start corretly , ApiKeyName");
+                Log.Fatal(ex, "Books-RPG failed to start corretly , ApiKeyName");
                 ServiceFailedResponse response = new() { Message = "unauthorised", IsSuccess = false };
                 context.Result = new UnauthorizedObjectResult(response);
 

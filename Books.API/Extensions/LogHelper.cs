@@ -50,11 +50,12 @@ namespace Books.API.Extensions
                 {
                    responseBody = JsonConvert.DeserializeObject<ResponseBody>(responseBodyPayload);
 
+
                 }
 
                 if (responseBody != null)
                 {
-                    diagnosticContext.Set("ResponseCode", responseBody.IsSuccess);
+                    diagnosticContext.Set("ResponseCode", responseBody.Code.ToString());
                     diagnosticContext.Set("Description", responseBody.Message);
                     diagnosticContext.Set("ResponseId", responseBody.ResponseId);
                 }
@@ -131,7 +132,7 @@ namespace Books.API.Extensions
 
         [XmlElement("IsSuccess")]
         public bool IsSuccess { get; set; }
-
+        public int Code { get; set; }
         [XmlElement("Message")]
         public dynamic? Message { get; set; }
     }

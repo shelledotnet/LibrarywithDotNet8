@@ -22,8 +22,6 @@ namespace Books.API.Middlewear
 
 
 
-
-
         #region MyRegion
         public async Task Invoke(HttpContext context)
         {
@@ -77,14 +75,16 @@ namespace Books.API.Middlewear
             }
             else
             {
-                context.Request.Headers.Append(key, "NA");
+                context.Request.Headers.Append(key, "");
 
             }
 
-            return "NA";
+            return "";
 
         }
         #endregion
+
+
     }
 
 
