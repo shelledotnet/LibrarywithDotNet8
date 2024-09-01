@@ -18,7 +18,7 @@
             <returns>A List of books</returns>
             <response code="200">A List of books</response>
         </member>
-        <member name="M:Books.API.Filter.RequestAuthActionFilter.Validate">
+        <member name="M:Books.API.Filter.RequestAuthActionFilterAttribute.Validate">
             <remarks>
             Pattern:<br/>
             <code>[^\\w\\.-]</code><br/>

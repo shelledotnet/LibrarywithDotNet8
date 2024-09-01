@@ -29,7 +29,7 @@ namespace Books.Domain.Entities;
         #region Reference-Navigation-Property
         public Guid AuthorId { get; set; }
 
-        public Author Author { get; set; } = null;
+        public Author? Author { get; set; } = null;
 
         #endregion
 
@@ -43,4 +43,5 @@ namespace Books.Domain.Entities;
             Description = description;
             AuthorId = authorId;
         }
-    }
+
+}

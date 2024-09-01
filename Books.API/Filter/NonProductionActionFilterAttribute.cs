@@ -4,7 +4,7 @@ using Books.domain.Models;
 
 namespace Books.API;
 
-public class NonProductionAttribute : ActionFilterAttribute
+public class NonProductionActionFilterAttribute : ActionFilterAttribute
 {
     public override void OnActionExecuting(ActionExecutingContext context)
     {

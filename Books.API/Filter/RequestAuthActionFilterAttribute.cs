@@ -6,15 +6,16 @@ using Books.Domain.Models;
 using Microsoft.Extensions.Options;
 using Books.Domain.Service;
 using System.Text.RegularExpressions;
+using Books.API.Extensions;
 
 namespace Books.API.Filter;
 
-public partial class RequestAuthActionFilter : IActionFilter
+public partial class RequestAuthActionFilterAttribute : IActionFilter
 {
     private readonly ProjectOptions _projectOptions;
     private readonly IClientHeader _clientHeader;
-    private readonly ILogger<RequestAuthActionFilter> _logger;
-    public RequestAuthActionFilter(IOptionsMonitor<ProjectOptions> projectOptions, ILogger<RequestAuthActionFilter> logger,
+    private readonly ILogger<RequestAuthActionFilterAttribute> _logger;
+    public RequestAuthActionFilterAttribute(IOptionsMonitor<ProjectOptions> projectOptions, ILogger<RequestAuthActionFilterAttribute> logger,
         IClientHeader clientHeader)
     {
         _projectOptions = projectOptions.CurrentValue;
@@ -115,7 +116,11 @@ public partial class RequestAuthActionFilter : IActionFilter
                 return;
             
         }
-        
+        if (!context.ModelState.IsValid)
+        {
+            context.Result = new BadRequestObjectResult(context.ModelState.GetApiResponse());
+            return;
+        }
         _clientHeader.clientId(clientIdentifier.Trim());
         _clientHeader.correlationId(correlationId?.Trim());
 

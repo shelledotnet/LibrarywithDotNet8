@@ -6,17 +6,17 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using System.Text;
 
-namespace Books.API.AttributeUsed
+namespace Books.API.Filter
 {
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class ApiKeyAttribute : Attribute, IAuthorizationFilter
+    public class ApiKeyAuthorizationFilterAttribute : Attribute, IAuthorizationFilter
     {
 
         private const string _ApiKeyName = "XApiKey";
         private readonly ProjectOptions _optionsMonitor;
 
-        public ApiKeyAttribute(IOptionsMonitor<ProjectOptions> optionsMonitor)
+        public ApiKeyAuthorizationFilterAttribute(IOptionsMonitor<ProjectOptions> optionsMonitor)
         {
             _optionsMonitor = optionsMonitor.CurrentValue;
         }
@@ -28,7 +28,7 @@ namespace Books.API.AttributeUsed
             {
                 var httpContext = context.HttpContext;
 
-                
+
 
                 #region Old-Implementation
                 //var apiKeyPresentInHeader = httpContext.Request.Headers.TryGetValue(_ApiKeyName, out var expectedApiKeyValue);
@@ -44,7 +44,7 @@ namespace Books.API.AttributeUsed
                 //context.Result = new UnauthorizedObjectResult(response); 
                 #endregion
 
-                
+
                 if (!httpContext.Request.Headers.TryGetValue(_ApiKeyName, out var expectedApiKeyValue))
                 {
                     ServiceFailedResponse response = new() { Message = "Api Key not found..", IsSuccess = false };
@@ -53,13 +53,13 @@ namespace Books.API.AttributeUsed
 
                 //expectedApiKeyValue to be in Base64String
                 byte[] expectedValue = Convert.FromBase64String(expectedApiKeyValue);
-                
+
                 if (!string.Equals(_optionsMonitor.XApiKey, Encoding.UTF8.GetString(expectedValue), StringComparison.Ordinal))
                 {
                     ServiceFailedResponse response = new() { Message = "Invalid API Key.", IsSuccess = false };
                     context.Result = new UnauthorizedObjectResult(response);
                 }
-            
+
             }
             catch (FormatException fx)
             {
