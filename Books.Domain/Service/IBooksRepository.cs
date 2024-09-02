@@ -1,4 +1,5 @@
 ﻿using Books.domain.Models;
+using Books.Domain.Dto;
 using Books.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,11 @@ namespace Books.Domain.Service;
 
  public interface IBooksRepository
  {
-    Task<ServiceResponse<IEnumerable<Book>>> GetBooksAsync();
-    Task<ServiceResponse<Book?>> GetBookByIdAsync(Guid id);
+    Task<ServiceResponse<IEnumerable<BookDto>>> GetBooksAsync();
+    Task<ServiceResponse<BookDto?>> GetBookByIdAsync(Guid id);
+
+    void  AddBook(Book bookToAdd);
+
+    Task<bool> SaveChangesAsync();
  }
 

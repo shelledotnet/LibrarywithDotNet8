@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using Books.API.AttributeUsed;
 using Books.API.Extensions;
 using Books.API.Filter;
 using Books.domain.Models;
+using Books.Domain.Dto;
 using Books.Domain.Entities;
 using Books.Domain.Models;
 using Books.Domain.Service;
@@ -19,8 +19,8 @@ namespace Books.API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ServiceFailedResponse))]
-[ServiceFilter(typeof(RequestAuthActionFilter))]
-[TypeFilter(typeof(ApiKeyAttribute))]
+[ServiceFilter(typeof(RequestAuthActionFilterAttribute))]
+[TypeFilter(typeof(ApiKeyAuthorizationFilterAttribute))]
 public class BooksController : ControllerBase
 {
     private readonly IBooksRepository _booksRepository;
@@ -73,20 +73,22 @@ public class BooksController : ControllerBase
     /// <response code="200">A List of books</response>
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ServiceForbidenResponse))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<Book>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<BookDto>>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
     [HttpGet("get-all-books",Name ="books")]
     public async Task<IActionResult> GetBooks()
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.GetApiResponse());
-        }
+        #region ModelState
+        //if (!ModelState.IsValid)
+        //{
+        //    return BadRequest(ModelState.GetApiResponse());
+        //} 
+        #endregion
         try
         {
             _logger.LogInformation("info");
-            ServiceResponse<IEnumerable<Book>> response = await _booksRepository.GetBooksAsync();
+            ServiceResponse<IEnumerable<BookDto>> response = await _booksRepository.GetBooksAsync();
 
 
             return response.Code switch
@@ -119,20 +121,23 @@ public class BooksController : ControllerBase
     /// <response code="200">A List of books</response>
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ServiceForbidenResponse))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<Book>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<BookDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
-    [HttpGet("get-books-by-id", Name = "book-by-id")]
+    [HttpGet("get-books-by-id", Name = "bookById")]
     public async Task<IActionResult> GetBookById([FromQuery] BooksId booksId)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.GetApiResponse());
-        }
+        #region ModelState
+
+        //if (!ModelState.IsValid)
+        //{
+        //    return BadRequest(ModelState.GetApiResponse());
+        //} 
+        #endregion
         try
         {
             _logger.LogInformation("info");
-            ServiceResponse<Book?> response = await _booksRepository.GetBookByIdAsync(booksId.Id);
+            ServiceResponse<BookDto?> response = await _booksRepository.GetBookByIdAsync(booksId.Id);
 
 
             return response.Code switch
@@ -159,8 +164,67 @@ public class BooksController : ControllerBase
 
 
 
+
+    /// <summary>
+    /// Create books
+    /// </summary>
+    /// <returns> book</returns>
+    /// <response code="201">Book</response>
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ServiceForbidenResponse))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ServiceResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
+    [HttpPost()]
+    public async Task<IActionResult> CreateBook([FromBody] BookForCreationDto bookforCreationDto)
+    {
+        #region ModelState
+
+        //if (!ModelState.IsValid)
+        //{
+        //    return BadRequest(ModelState.GetApiResponse());
+        //} 
+        #endregion
+        try
+        {
+            _logger.LogInformation("info");
+            Book bookEntity = _mapper.Map<Book>(bookforCreationDto);
+            _booksRepository.AddBook(bookEntity);
+            bool add = await _booksRepository.SaveChangesAsync();
+            if (add)
+            {
+                return CreatedAtRoute("bookById", new BooksId{ Id = bookEntity.Id},bookEntity);
+            }
+
+            //return response.Code switch
+            //{
+            //    (int)HttpStatusCode.Created => Created("",response),
+            //    (int)HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
+            //    (int)HttpStatusCode.BadRequest => BadRequest(response),
+            //    (int)HttpStatusCode.Conflict => Conflict(response),
+            //    (int)HttpStatusCode.InternalServerError => StatusCode(500, response),
+
+            //    _ => StatusCode(422, response),
+            //};
+
+
+        }
+        catch (Exception ex)
+        {
+
+            _logger.LogError($"{ex}");
+            ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+            return StatusCode(500, serviceResponse);
+        }
+    }
+
+
+
+
+
+
+
     [HttpGet("hello-world", Name = "helloworld"), AllowAnonymous]
-    [NonProduction]
+    [NonProductionActionFilter]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<Testla>))]
     public IActionResult HelloWorld()
     {
@@ -235,16 +299,35 @@ public class BooksController : ControllerBase
     }
 
 
-    [HttpPatch("UpdateAppointmentRequest{id:guid}")]
+    [HttpPatch("UpdateAppointmentRequest/{id:guid}")]
     public async Task<IActionResult> Update(Guid id,
         [FromHeader(Name = "If-Match")] string? ifMatch, CancellationToken cancellationToken = default)
-    {
+    { 
         ServiceResponse<string> response = new();
-        response.Data = $"User created successfully! {id}";
+        if (isGUID(id))
+        {
+        response.Data = $"User with header value {ifMatch} created successfully! {id}";
         response.Message= "success";
         return Ok(response);
+        }
+        else
+        {
+            response.Data = $"User with header value {ifMatch} wasnt updated";
+            response.Message = "failed";
+            return BadRequest(response);
+        }
+        
+       
     }
 
+    [NonAction]
+    private bool isGUID(Guid str)
+    {
+
+        if (Guid.TryParse(str.ToString(), out Guid xCorrelationId))
+            return true;
+        return false;
+    }
 
 }
 

@@ -1,4 +1,4 @@
-﻿using Books.API.AttributeUsed;
+﻿using Books.API.Filter;
 using System.Runtime.CompilerServices;
 
 namespace Books.API.Extensions
@@ -8,7 +8,7 @@ namespace Books.API.Extensions
         public static IApplicationBuilder UseApiKey(
             this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<ApiKeyAttribute>();
+            return builder.UseMiddleware<ApiKeyAuthorizationFilterAttribute>();
         }
     }
 }

@@ -1,5 +1,4 @@
 using AccountInquiry.API.Extensions;
-using Books.API.AttributeUsed;
 using Books.API.Extensions;
 using Books.API.Filter;
 using Books.API.Filters;
@@ -121,7 +120,9 @@ try
     opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("BooksConnection")));
     //please note ensure to create a class that inherit IDesignTimeDbContextFactory<BookContext>
 
+    //it will register Authomapper service and  also scan this Assembly/Project in this class Program for any type that inherit AutoMapper Profile
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
     builder.Services.AddScoped<IBooksRepository, BooksRepository>();
     builder.Services.AddApiVersioning(option =>
     {
@@ -129,11 +130,14 @@ try
         option.DefaultApiVersion = new ApiVersion(1, 0);
         option.ReportApiVersions = true;
     });
-    builder.Services.AddScoped<RequestAuthActionFilter>();
+    builder.Services.AddScoped<RequestAuthActionFilterAttribute>();
+
     #endregion
 
     #region Middlewear HttpRequest Lands  here this Listent to HttpRequest hirachichally (is the link btw Clients and Server)
     var app = builder.Build();
+
+
 #if DEBUG
     #region This will create the Db and run all pending migrations if not exist when application start***this should be discourage at production
     await EnsureDatabaseIsMigrated(app.Services);
@@ -199,7 +203,7 @@ catch (Exception ex)
 {
     string type = ex.GetType().Name;
     if (type.Equals("StopTheHostException", StringComparison.OrdinalIgnoreCase)) throw;
-    Log.Fatal(ex, "Books failed to start corretly , Host terminated unexpectedly");
+    Log.Fatal("Books failed to start corretly , Host terminated unexpectedly",ex);
 }
 finally
 {
