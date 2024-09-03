@@ -41,7 +41,8 @@ namespace Books.Domain.Entities;
             Id = id;
             Title = title;
             Description = description;
-            AuthorId = authorId;
+            AuthorId = authorId;   
+
         }
 
 }
