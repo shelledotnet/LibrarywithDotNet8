@@ -18,6 +18,13 @@
             <returns>A List of books</returns>
             <response code="200">A List of books</response>
         </member>
+        <member name="M:Books.API.Controllers.BooksController.CreateBook(Books.Domain.Dto.BookForCreationDto)">
+            <summary>
+            Create books
+            </summary>
+            <returns> book</returns>
+            <response code="201">Book</response>
+        </member>
         <member name="M:Books.API.Filter.RequestAuthActionFilterAttribute.Validate">
             <remarks>
             Pattern:<br/>
