@@ -194,7 +194,7 @@ public class BooksController : ControllerBase
             {
                 return CreatedAtRoute("bookById", new BooksId{ Id = bookEntity.Id},bookEntity);
             }
-
+            return BadRequest(new ServiceBadResponse());
             //return response.Code switch
             //{
             //    (int)HttpStatusCode.Created => Created("",response),

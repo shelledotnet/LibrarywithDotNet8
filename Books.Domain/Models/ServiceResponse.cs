@@ -28,7 +28,7 @@ namespace Books.domain.Models;
     public class ServiceBadResponse
     {
 
-    public int Code { get; set; }
+    public int Code { get; set; } = 400;
     public bool IsSuccess { get; set; } = false;
     public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
 
