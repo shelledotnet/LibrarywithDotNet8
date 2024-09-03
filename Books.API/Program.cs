@@ -5,9 +5,11 @@ using Books.API.Filters;
 using Books.Domain.DbContexts;
 using Books.Domain.Models;
 using Books.Domain.Service;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -70,6 +72,7 @@ try
 
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
     builder.Services.AddSwaggerGen(c =>
     {
 
@@ -97,6 +100,7 @@ try
         var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         c.IncludeXmlComments(xmlPath);
+        c.ExampleFilters();
     });
 
     builder.Services.AddOptions<ProjectOptions>()
