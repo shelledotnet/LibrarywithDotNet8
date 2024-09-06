@@ -22,8 +22,8 @@ namespace Books.Domain.Entities;
         public string? Description { get; set; }
 
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime CreatedDdate { get; set; }
+        //[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        //public DateTime CreatedDdate { get; set; }
         #endregion
 
         #region Reference-Navigation-Property

@@ -143,7 +143,10 @@ namespace Books.Domain.Models
 
         [Required(AllowEmptyStrings = false)]
         public string? CorrelationIdMaxLength { get; set; }
-        
+
+        [Required(AllowEmptyStrings = false)]
+        public string? BookFailed { get; set; }
+
         #region MyRegion
         //[Required(AllowEmptyStrings = false)]
         //public string? Version { get; set; }

@@ -16,13 +16,13 @@ namespace Books.Domain.Dto
         public string? Description { get; set; }
 
 
-        public BookDto(Guid id, string? title, string? description , string authoName)
+        public BookDto(Guid id, string? title, string? description , string authorName)
         {
 
             Id = id;
             Title = title;
             Description = description;
-            AuthorName = authoName;
+            AuthorName = authorName;
         }
     }
 }

@@ -119,7 +119,54 @@ namespace Books.Domain.Service
             return response;
         }
 
-        public void AddBook(Book bookToAdd)
+       public async Task<ServiceResponse<BookDto?>> CreateBookAsync(BookForCreationDto bookforCreationDto)
+        {
+            ServiceResponse<BookDto?> response = new();
+            try
+            {
+
+                Book bookEntity = _mapper.Map<Book>(bookforCreationDto);
+                AddBook(bookEntity);
+                bool add = await SaveChangesAsync();
+                if(!add)
+                {
+                    response.IsSuccess = false;
+                    response.Code = 503;
+                    response.Message = _projectOptions.BookFailed;
+                    return response;
+                }
+                var book = await _bookContext.Books
+                                .Include(b => b.Author)
+                                .FirstOrDefaultAsync(x => x.Id == bookEntity.Id);
+
+
+                if (book is not null)
+                {
+                    response.IsSuccess = true;
+                    response.Message = _projectOptions.IsSuccess;
+                    response.Code = _projectOptions.Ok;
+                    response.Data = _mapper.Map<BookDto>(book);
+                }
+                else
+                {
+                    response.IsSuccess = false;
+                    response.Message = _projectOptions.NOtFoundDescription;
+                    response.Code = _projectOptions.NotFound;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex}");
+                response.IsSuccess = false;
+                response.Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message;
+            }
+            return response;
+
+        }
+
+        private void AddBook(Book bookToAdd)
         {
             try
             {
@@ -139,10 +186,10 @@ namespace Books.Domain.Service
             }
         }
 
-        public async Task<bool> SaveChangesAsync()
+        private async Task<bool> SaveChangesAsync()
         {
             //this is an i/o function that need async-- that persist to db
-            //return true if 1 or more entites were changed
+            //return true if 1 or more entites were persisted to db
             return (await _bookContext.SaveChangesAsync() > 0);
         }
 
