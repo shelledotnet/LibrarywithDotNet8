@@ -180,10 +180,7 @@ public class BooksController : ControllerBase
     {
         #region ModelState
 
-        //if (!ModelState.IsValid)
-        //{
-        //    return BadRequest(ModelState.GetApiResponse());
-        //} 
+        
         #endregion
         try
         {

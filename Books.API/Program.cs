@@ -1,4 +1,5 @@
 using AccountInquiry.API.Extensions;
+using AspNetCoreRateLimit;
 using Books.API.Extensions;
 using Books.API.Filter;
 using Books.API.Filters;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Swashbuckle.AspNetCore.Filters;
+using System.Configuration;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -68,6 +70,7 @@ try
 
 		options.SuppressModelStateInvalidFilter = true;
 	});//for custom message  different from the workload
+
 	builder.Services.AddScoped<IClientHeader, ClientHeader>();
 
 	// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -136,6 +139,43 @@ try
 	});
 	builder.Services.AddScoped<RequestAuthActionFilterAttribute>();
 
+	#region Rate Limitting
+
+	builder.Services.AddMemoryCache();
+	var peroid = projectOptions.Period;
+	var Limit = projectOptions.Limit;
+
+	builder.Services.Configure<IpRateLimitOptions>(options =>
+	{
+		options.EnableEndpointRateLimiting = true;
+		options.StackBlockedRequests = false;
+		options.HttpStatusCode = 429;
+		options.RealIpHeader = "X-Real-IP";
+		options.ClientIdHeader = "X-ClientId";
+		options.HttpStatusCode = 429;
+		options.GeneralRules = new List<RateLimitRule>
+			{
+			new RateLimitRule
+			{
+				Endpoint = "*",
+				Period = peroid,// "10s",
+				Limit = Convert.ToDouble(Limit),//5,
+			}
+			};
+	});
+
+	builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+
+	builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+
+	builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+	builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+
+	builder.Services.AddInMemoryRateLimiting();
+
+	#endregion
+
 	#endregion
 
 	#region Middlewear HttpRequest Lands  here this Listent to HttpRequest hirachichally (is the link btw Clients and Server)
@@ -188,9 +228,14 @@ try
 		});
 	}
 
+	app.UseIpRateLimiting();
 	app.UseCorrelationId();
 	app.UseHttpsRedirection();
-	app.UseCors();//add this after UserRouting and before UseEndpoints  or UseAuthorization();
+	app.UseCors(x=>x
+	.AllowAnyHeader()
+	.AllowAnyMethod()
+	.AllowAnyOrigin()
+	);//add this after UserRouting and before UseEndpoints  or UseAuthorization();
 	app.UseMiddleware(typeof(CustomResponseHeaderMiddleware));
 	app.UseRequesResponse();
 	app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = LogHelper.EnrichFromRequest);
@@ -207,9 +252,9 @@ catch (Exception ex)
 {
 	string type = ex.GetType().Name;
 	if (type.Equals("StopTheHostException", StringComparison.OrdinalIgnoreCase)) throw;
-	Log.Fatal("Books failed to start corretly , Host terminated unexpectedly",ex);
+	Log.Fatal("Books failed to start corretly , Host terminated unexpectedly", ex);
 }
 finally
 {
-	Log.CloseAndFlush();
+	await Log.CloseAndFlushAsync();
 }

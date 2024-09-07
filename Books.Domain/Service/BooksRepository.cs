@@ -131,7 +131,7 @@ namespace Books.Domain.Service
                 if(!add)
                 {
                     response.IsSuccess = false;
-                    response.Code = 503;
+                    response.Code = _projectOptions.ServiceUnAvailable;
                     response.Message = _projectOptions.BookFailed;
                     return response;
                 }
@@ -144,7 +144,7 @@ namespace Books.Domain.Service
                 {
                     response.IsSuccess = true;
                     response.Message = _projectOptions.IsSuccess;
-                    response.Code = _projectOptions.Ok;
+                    response.Code = _projectOptions.Created;
                     response.Data = _mapper.Map<BookDto>(book);
                 }
                 else

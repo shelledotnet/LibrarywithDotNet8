@@ -9,6 +9,8 @@ namespace Books.API.SwaggerDocs.RequestDocs;
 
 public class BookForCreationRequestExample : IExamplesProvider<BookForCreationDto>
 {
+
+
     public BookForCreationDto GetExamples()
     {
         return new BookForCreationDto(Guid.NewGuid(), GenerateRandomName(), GenerateRandomString(30));
