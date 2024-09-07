@@ -118,6 +118,8 @@ namespace Books.Domain.Models
         [Required(AllowEmptyStrings = false)]
         public int Delay { get; set; }
 
+        [Required(AllowEmptyStrings = false)]
+        public int Created { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? RegisterationFailed { get; set; }
@@ -143,6 +145,19 @@ namespace Books.Domain.Models
 
         [Required(AllowEmptyStrings = false)]
         public string? CorrelationIdMaxLength { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string? BookFailed { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public int ServiceUnAvailable { get; set; }
+
+
+        [Required(AllowEmptyStrings = false)]
+        public string? Limit { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string? Period { get; set; }
         
         #region MyRegion
         //[Required(AllowEmptyStrings = false)]

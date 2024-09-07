@@ -27,9 +27,10 @@ namespace Books.API.Profiles
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src =>
                 $"{src.Author.FirstName} {src.Author.LastName}"))
                 .ConstructUsing(src => new BookDto(src.Id,
-                string.Empty,
+                src.Title,
                 src.Description,
-                src.Title));
+                $"{src.Author.FirstName} {src.Author.LastName}"));
+
             CreateMap<BookForCreationDto, Book>()
                  .ConstructUsing(src => new Book(Guid.NewGuid(),
                 src.AuthorId,

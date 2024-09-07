@@ -21,8 +21,8 @@ namespace Books.Domain.Entities
         public string? LastName { get; set; }
 
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime CreatedDdate { get; set; }
+        //[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        //public DateTime CreatedDdate { get; set; }
 
 
         public Author(Guid id,string? firstName,string? lastName)

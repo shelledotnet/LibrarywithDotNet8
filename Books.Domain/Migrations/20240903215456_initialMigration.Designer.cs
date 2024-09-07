@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Books.Domain.Migrations
 {
     [DbContext(typeof(BookContext))]
-    [Migration("20240903110223_initialReq")]
-    partial class initialReq
+    [Migration("20240903215456_initialMigration")]
+    partial class initialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,10 +30,6 @@ namespace Books.Domain.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDdate")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -53,14 +49,12 @@ namespace Books.Domain.Migrations
                         new
                         {
                             Id = new Guid("d28888e9-2ba9-473a-a40f-a38cb54f9b35"),
-                            CreatedDdate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FirstName = "Ada",
                             LastName = "RR Martin"
                         },
                         new
                         {
                             Id = new Guid("da2fd609-d754-4feb-8acd-c4f9ff13ba96"),
-                            CreatedDdate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FirstName = "Stephen",
                             LastName = "Flyin"
                         });
@@ -74,10 +68,6 @@ namespace Books.Domain.Migrations
 
                     b.Property<Guid>("AuthorId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDdate")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -100,7 +90,6 @@ namespace Books.Domain.Migrations
                         {
                             Id = new Guid("5b1c2b4d-48c7-402a-80c3-cc796ad49c6b"),
                             AuthorId = new Guid("d28888e9-2ba9-473a-a40f-a38cb54f9b35"),
-                            CreatedDdate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "RR Martin",
                             Title = "The Winds of winter"
                         },
@@ -108,7 +97,6 @@ namespace Books.Domain.Migrations
                         {
                             Id = new Guid("abb6fb40-d72f-402b-b07c-47ff00824bad"),
                             AuthorId = new Guid("da2fd609-d754-4feb-8acd-c4f9ff13ba96"),
-                            CreatedDdate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Flyin",
                             Title = "Land"
                         });

@@ -21,6 +21,7 @@ namespace Books.API.Controllers;
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ServiceFailedResponse))]
 [ServiceFilter(typeof(RequestAuthActionFilterAttribute))]
 [TypeFilter(typeof(ApiKeyAuthorizationFilterAttribute))]
+
 public class BooksController : ControllerBase
 {
     private readonly IBooksRepository _booksRepository;
@@ -179,32 +180,25 @@ public class BooksController : ControllerBase
     {
         #region ModelState
 
-        //if (!ModelState.IsValid)
-        //{
-        //    return BadRequest(ModelState.GetApiResponse());
-        //} 
+        
         #endregion
         try
         {
             _logger.LogInformation("info");
-            Book bookEntity = _mapper.Map<Book>(bookforCreationDto);
-            _booksRepository.AddBook(bookEntity);
-            bool add = await _booksRepository.SaveChangesAsync();
-            if (add)
-            {
-                return CreatedAtRoute("bookById", new BooksId{ Id = bookEntity.Id},bookEntity);
-            }
-            return BadRequest(new ServiceBadResponse());
-            //return response.Code switch
-            //{
-            //    (int)HttpStatusCode.Created => Created("",response),
-            //    (int)HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
-            //    (int)HttpStatusCode.BadRequest => BadRequest(response),
-            //    (int)HttpStatusCode.Conflict => Conflict(response),
-            //    (int)HttpStatusCode.InternalServerError => StatusCode(500, response),
 
-            //    _ => StatusCode(422, response),
-            //};
+
+            ServiceResponse<BookDto?> response = await _booksRepository.CreateBookAsync(bookforCreationDto);
+
+            return response.Code switch
+            {
+                (int)HttpStatusCode.Created => CreatedAtRoute("bookById", new BooksId { Id = response.Data.Id }, response),
+                (int)HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
+                (int)HttpStatusCode.BadRequest => BadRequest(response),
+                (int)HttpStatusCode.Conflict => Conflict(response),
+                (int)HttpStatusCode.InternalServerError => StatusCode(500, response),
+
+                _ => StatusCode(422, response),
+            };
 
 
         }
@@ -215,6 +209,11 @@ public class BooksController : ControllerBase
             ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
             return StatusCode(500, serviceResponse);
         }
+    
+    
+    
+    
+    
     }
 
 

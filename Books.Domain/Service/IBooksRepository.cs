@@ -14,8 +14,10 @@ namespace Books.Domain.Service;
     Task<ServiceResponse<IEnumerable<BookDto>>> GetBooksAsync();
     Task<ServiceResponse<BookDto?>> GetBookByIdAsync(Guid id);
 
-    void  AddBook(Book bookToAdd);
+    Task<ServiceResponse<BookDto?>> CreateBookAsync(BookForCreationDto bookforCreationDto);
 
-    Task<bool> SaveChangesAsync();
- }
+    //void  AddBook(Book bookToAdd);
+
+    //Task<bool> SaveChangesAsync();
+}
 
