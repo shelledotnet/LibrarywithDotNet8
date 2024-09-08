@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿// Ignore Spelling: Dto bookfor
+
+using AutoMapper;
 using Books.domain.Models;
 using Books.Domain.DbContexts;
 using Books.Domain.Dto;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Reflection.Metadata.BlobBuilder;
@@ -124,6 +127,16 @@ namespace Books.Domain.Service
             ServiceResponse<BookDto?> response = new();
             try
             {
+                if(ValidateInput.ValidateUserInput(bookforCreationDto)) 
+                {
+
+                    response.IsSuccess = false;
+                    response.Code = _projectOptions.BadRequest;
+                    response.Message = _projectOptions.BadRequestDescriptioValue;
+                    return response;
+
+
+                }
 
                 Book bookEntity = _mapper.Map<Book>(bookforCreationDto);
                 AddBook(bookEntity);
@@ -200,5 +213,9 @@ namespace Books.Domain.Service
                 return true;
             return false;
         }
+
+
+
+       
     }
 }
