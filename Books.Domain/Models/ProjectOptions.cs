@@ -134,6 +134,9 @@ namespace Books.Domain.Models
         public int BadRequest { get; set; }
 
         [Required(AllowEmptyStrings = false)]
+        public string? BadRequestDescriptioValue { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string? BadRequestDescription { get; set; }
 
         [Required(AllowEmptyStrings = false)]
@@ -158,7 +161,9 @@ namespace Books.Domain.Models
 
         [Required(AllowEmptyStrings = false)]
         public string? Period { get; set; }
+
         
+
         #region MyRegion
         //[Required(AllowEmptyStrings = false)]
         //public string? Version { get; set; }
