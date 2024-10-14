@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace Books.domain.Models;
     {
         public T? Data { get; set; }
 
-        public int Code { get; set; }
+        public HttpStatusCode Code { get; set; }
 
         public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
         public bool IsSuccess { get; set; } = true;

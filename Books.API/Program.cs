@@ -20,9 +20,10 @@ using System.Text.Json.Serialization;
 
 
 var configurationBuilder = new ConfigurationBuilder()
-								.AddJsonFile("appsettings.json", false, true)
+								.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
 								.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
-								.Build();
+                                .AddJsonFile("appsettings.Production.json", optional: true, reloadOnChange: true)
+                                .Build();
 
 Log.Logger = new LoggerConfiguration()
 				 .ReadFrom.Configuration(configurationBuilder)
@@ -138,10 +139,21 @@ try
 		option.ReportApiVersions = true;
 	});
 	builder.Services.AddScoped<RequestAuthActionFilterAttribute>();
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddHttpClient("university", x =>
+    {
+        x.BaseAddress = new Uri(projectOptions.UniBaseUrl);
+        // x.DefaultRequestHeaders = new Dictionary<string,string>
+    });
+    builder.Services.AddHttpClient("jokes", x =>
+    {
+        x.BaseAddress = new Uri(projectOptions.JokesUrl);
+        // x.DefaultRequestHeaders = new Dictionary<string,string>
+    });
 
-	#region Rate Limitting
+    #region Rate Limitting
 
-	builder.Services.AddMemoryCache();
+    builder.Services.AddMemoryCache();
 	var peroid = projectOptions.Period;
 	var Limit = projectOptions.Limit;
 

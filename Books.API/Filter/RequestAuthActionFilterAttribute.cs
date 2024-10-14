@@ -121,12 +121,13 @@ public partial class RequestAuthActionFilterAttribute : IActionFilter
             context.Result = new BadRequestObjectResult(context.ModelState.GetApiResponse());
             return;
         }
+
         _clientHeader.clientId(clientIdentifier.Trim());
         _clientHeader.correlationId(correlationId?.Trim());
 
         // this is better to use as global but i have already used the above in a lot of places so it won't be easy changing it to below...//
-        Environment.SetEnvironmentVariable("clientId", clientIdentifier.Trim());
-        Environment.SetEnvironmentVariable("correlationId", correlationId.Trim());
+        Environment.SetEnvironmentVariable("clientId", clientIdentifier.Trim(), EnvironmentVariableTarget.Process);//Process is default
+        Environment.SetEnvironmentVariable("correlationId", correlationId.Trim(), EnvironmentVariableTarget.User);
         ///////////////////////////////////////////////////////////////////////////
         var clientIPAddr = context.HttpContext.Connection.RemoteIpAddress?.ToString();
         context.HttpContext.Request.Headers.Append("clientIPAddr", clientIPAddr);

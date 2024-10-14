@@ -25,6 +25,33 @@
             <returns> book</returns>
             <response code="201">Book</response>
         </member>
+        <member name="M:Books.API.Controllers.BooksController.GetList(Books.Domain.Dto.CountryDto)">
+            <summary>
+            Get all list of university by country
+            </summary>
+            <param name="countryDto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Books.API.Controllers.BooksController.GetList2(Books.Domain.Dto.CountryDto)">
+            <summary>
+            Get all list of university by country
+            </summary>
+            <param name="countryDto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Books.API.Controllers.BooksController.GetList3(Books.Domain.Dto.CountryDto)">
+            <summary>
+            Get all list of university by country
+            </summary>
+            <param name="countryDto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Books.API.Controllers.BooksController.GetList4">
+            <summary>
+            Get all list of university by country
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Books.API.Filter.RequestAuthActionFilterAttribute.Validate">
             <remarks>
             Pattern:<br/>

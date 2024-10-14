@@ -27,6 +27,7 @@ public class BooksController : ControllerBase
     private readonly IBooksRepository _booksRepository;
     private readonly ProjectOptions _projectOptions;
     private readonly ILogger<BooksRepository> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMapper _mapper;
 
 
@@ -57,13 +58,14 @@ public class BooksController : ControllerBase
 
 
     public BooksController(IBooksRepository booksRepository, IOptionsMonitor<ProjectOptions> projectOptions,
-            ILogger<BooksRepository> logger, IMapper mapper)
+            ILogger<BooksRepository> logger, IMapper mapper, IHttpClientFactory httpClientFactory)
     {
         _booksRepository = booksRepository ??
             throw new ArgumentNullException(nameof(booksRepository));
         _projectOptions = projectOptions.CurrentValue;
         _logger = logger;
         _mapper= mapper ?? throw new ArgumentNullException(nameof (mapper));
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException( nameof(httpClientFactory));
     }
 
 
@@ -80,25 +82,22 @@ public class BooksController : ControllerBase
     [HttpGet("get-all-books",Name ="books")]
     public async Task<IActionResult> GetBooks()
     {
-        #region ModelState
-        //if (!ModelState.IsValid)
-        //{
-        //    return BadRequest(ModelState.GetApiResponse());
-        //} 
-        #endregion
+       
         try
         {
+            string clientId = Environment.GetEnvironmentVariable("clientId");
+
             _logger.LogInformation("info");
             ServiceResponse<IEnumerable<BookDto>> response = await _booksRepository.GetBooksAsync();
 
 
             return response.Code switch
             {
-                (int)HttpStatusCode.OK => Ok(response),
-                (int)HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
-                (int)HttpStatusCode.BadRequest => BadRequest(response),
-                (int)HttpStatusCode.Conflict => Conflict(response),
-                (int)HttpStatusCode.InternalServerError => StatusCode(500, response),
+                HttpStatusCode.OK => Ok(response),
+                HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
+                HttpStatusCode.BadRequest => BadRequest(response),
+                HttpStatusCode.Conflict => Conflict(response),
+                HttpStatusCode.InternalServerError => StatusCode(500, response),
 
                 _ => StatusCode(422, response),
             };
@@ -108,12 +107,12 @@ public class BooksController : ControllerBase
         catch (Exception ex)
         {
 
-            _logger.LogError($"{ex}");
+            _logger.LogError($"GetBooks: {ex}");
             ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
             return StatusCode(500, serviceResponse);
         }
     }
-
+    
 
     /// <summary>
     /// Get all books
@@ -143,11 +142,11 @@ public class BooksController : ControllerBase
 
             return response.Code switch
             {
-                (int)HttpStatusCode.OK => Ok(response),
-                (int)HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
-                (int)HttpStatusCode.BadRequest => BadRequest(response),
-                (int)HttpStatusCode.Conflict => Conflict(response),
-                (int)HttpStatusCode.InternalServerError => StatusCode(500, response),
+                HttpStatusCode.OK => Ok(response),
+                HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
+                HttpStatusCode.BadRequest => BadRequest(response),
+                HttpStatusCode.Conflict => Conflict(response),
+                HttpStatusCode.InternalServerError => StatusCode(500, response),
 
                 _ => StatusCode(422, response),
             };
@@ -191,11 +190,11 @@ public class BooksController : ControllerBase
 
             return response.Code switch
             {
-                (int)HttpStatusCode.Created => CreatedAtRoute("bookById", new BooksId { Id = response.Data.Id }, response),
-                (int)HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
-                (int)HttpStatusCode.BadRequest => BadRequest(response),
-                (int)HttpStatusCode.Conflict => Conflict(response),
-                (int)HttpStatusCode.InternalServerError => StatusCode(500, response),
+                HttpStatusCode.Created => CreatedAtRoute("bookById", new BooksId { Id = response.Data.Id }, response),
+                HttpStatusCode.NotFound => NotFound(_mapper.Map<ServiceFailedResponse>(response)),
+                HttpStatusCode.BadRequest => BadRequest(response),
+                HttpStatusCode.Conflict => Conflict(response),
+                HttpStatusCode.InternalServerError => StatusCode(500, response),
 
                 _ => StatusCode(422, response),
             };
@@ -217,11 +216,6 @@ public class BooksController : ControllerBase
     }
 
 
-
-
-
-
-
     [HttpGet("hello-world", Name = "helloworld"), AllowAnonymous]
     [NonProductionActionFilter]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<Testla>))]
@@ -232,7 +226,7 @@ public class BooksController : ControllerBase
         {
             Result = "Hello world"
         };
-        response.Code = 200;
+        response.Code = HttpStatusCode.OK;
         response.Data = testla;
         response.IsSuccess = true;
         response.Message = "success";
@@ -242,7 +236,7 @@ public class BooksController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("{manufacture}")]
+    [HttpGet("manufacture/{manufacture}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ProductDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
     public IActionResult Manufacture([FromRoute(Name = "manufacture")][DefaultValue("sony")] string brand, [FromQuery(Name = "coverage")][DefaultValue(2)] int warrantyYears)
@@ -256,7 +250,7 @@ public class BooksController : ControllerBase
             if (prd != null)
             {
                 response.Data = prd;
-                response.Code = 200;
+                response.Code = HttpStatusCode.OK;
                 response.Message= "success";
                 return Ok(response);
 
@@ -318,6 +312,186 @@ public class BooksController : ControllerBase
         
        
     }
+
+
+    /// <summary>
+    /// Get all list of university by country
+    /// </summary>
+    /// <param name="countryDto"></param>
+    /// <returns></returns>
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
+    [HttpGet("get-university-list"), AllowAnonymous]
+    public async Task<IActionResult> GetList([FromQuery] CountryDto countryDto)
+    {
+
+        try
+        {
+            _logger.LogInformation("info");
+
+
+            HttpClient client = new();
+            client.BaseAddress = new Uri(_projectOptions.UniBaseUrl);
+            var response = await client.GetAsync($"search?country={countryDto.Country}");
+            if (response.IsSuccessStatusCode)
+            {
+                ServiceResponse<dynamic> serviceResponse = new();
+                serviceResponse.Code = response.StatusCode;
+                serviceResponse.Data = await response.Content.ReadFromJsonAsync<dynamic>();
+                return Ok(serviceResponse);
+            }
+            return BadRequest();
+
+        }
+        catch (Exception ex)
+        {
+
+            _logger.LogError($"{ex}");
+            ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+            return StatusCode(500, serviceResponse);
+        }
+    }
+
+
+    /// <summary>
+    /// Get all list of university by country
+    /// </summary>
+    /// <param name="countryDto"></param>
+    /// <returns></returns>
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
+    [HttpGet("get-university-list-2"), AllowAnonymous]
+    public async Task<IActionResult> GetList2([FromQuery] CountryDto countryDto)
+    {
+
+        try
+        {
+            _logger.LogInformation("info");
+
+
+            // add this as a service builder.Services.AddHttpClient();
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, $"{_projectOptions.UniBaseUrl}search?country={countryDto.Country}");
+
+            var httpClient = _httpClientFactory.CreateClient();
+            var response = await httpClient.SendAsync(httpRequestMessage);
+            if (response.IsSuccessStatusCode)
+            {
+                ServiceResponse<dynamic> serviceResponse = new();
+                serviceResponse.Data = await response.Content.ReadFromJsonAsync<dynamic>();
+                return Ok(serviceResponse);
+            }
+            return BadRequest();
+
+        }
+        catch (Exception ex)
+        {
+
+            _logger.LogError($"{ex}");
+            ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+            return StatusCode(500, serviceResponse);
+        }
+    }
+
+    /// <summary>
+    /// Get all list of university by country
+    /// </summary>
+    /// <param name="countryDto"></param>
+    /// <returns></returns>
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
+    [HttpGet("getlist-http-client-3"), AllowAnonymous]
+    public async Task<IActionResult> GetList3([FromQuery] CountryDto countryDto)
+    {
+
+        try
+        {
+            _logger.LogInformation("info");
+
+
+
+            var httpClient = _httpClientFactory.CreateClient("university");
+            var response = await httpClient.GetAsync($"search?country={countryDto.Country}");
+            if (response.IsSuccessStatusCode)
+            {
+                ServiceResponse<dynamic> serviceResponse = new();
+                serviceResponse.Data = await response.Content.ReadFromJsonAsync<dynamic>();
+                return Ok(serviceResponse);
+            }
+            return BadRequest();
+
+        }
+        catch (Exception ex)
+        {
+
+            _logger.LogError($"{ex}");
+            ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+            return StatusCode(500, serviceResponse);
+        }
+    }
+
+    /// <summary>
+    /// Get all list of university by country
+    /// </summary>
+    /// <returns></returns>
+    //[ApiExplorerSettings(IgnoreApi = true)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
+    [HttpGet("get-jokes-http-client-4"), AllowAnonymous]
+    public async Task<IActionResult> GetList4()
+    {
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState.GetApiResponse());
+        }
+
+        
+        try
+        {
+            await Task.Run(() => _logger.LogInformation("info"));
+
+
+            // add this as a service builder.Services.AddHttpClient();  and aslo usning a namedclient
+
+            var httpClient = _httpClientFactory.CreateClient("jokes");
+            var response = await httpClient.GetAsync("random_joke");
+            if (response.IsSuccessStatusCode)
+            {
+                ServiceResponse<dynamic> serviceResponse = new();
+                serviceResponse.Data = await response.Content.ReadFromJsonAsync<dynamic>();
+                return Ok(serviceResponse);
+            }
+            return BadRequest();
+
+        }
+        catch (Exception ex)
+        {
+
+            _logger.LogError($"{ex}");
+            ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+            return StatusCode(500, serviceResponse);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     [NonAction]
     private bool isGUID(Guid str)
