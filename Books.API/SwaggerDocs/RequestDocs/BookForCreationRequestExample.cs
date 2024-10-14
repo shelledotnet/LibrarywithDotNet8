@@ -13,7 +13,7 @@ public class BookForCreationRequestExample : IExamplesProvider<BookForCreationDt
 
     public BookForCreationDto GetExamples()
     {
-        return new BookForCreationDto(Guid.NewGuid(), GenerateRandomName(), GenerateRandomString(30));
+        return new BookForCreationDto(Guid.NewGuid(), GenerateRandomName(), GenerateRandomDescription());
         
     }
 
@@ -35,5 +35,10 @@ public class BookForCreationRequestExample : IExamplesProvider<BookForCreationDt
     static string GenerateRandomName()
     {
         return new Faker("en").Company.CompanyName();
+    }
+
+    static string GenerateRandomDescription()
+    {
+        return new Faker("en").Address.FullAddress();
     }
 }
