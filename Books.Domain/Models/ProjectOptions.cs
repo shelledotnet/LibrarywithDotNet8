@@ -28,13 +28,13 @@ namespace Books.Domain.Models
         public string? SearchQuery { get; set; }
 
         [Required(AllowEmptyStrings = false)]
-        public int Ok { get; set; }
+        public string Ok { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? FilterQquery { get; set; }
 
         [Required(AllowEmptyStrings = false)]
-        public int NotFound { get; set; }
+        public string NotFound { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? Conflict { get; set; }
@@ -119,7 +119,7 @@ namespace Books.Domain.Models
         public int Delay { get; set; }
 
         [Required(AllowEmptyStrings = false)]
-        public int Created { get; set; }
+        public string Created { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? RegisterationFailed { get; set; }
@@ -131,7 +131,7 @@ namespace Books.Domain.Models
         public string[]? UserStatus { get; set; }
 
         [Required(AllowEmptyStrings = false)]
-        public int BadRequest { get; set; }
+        public string BadRequest { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? BadRequestDescriptioValue { get; set; }

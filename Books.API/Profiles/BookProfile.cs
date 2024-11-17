@@ -13,9 +13,16 @@ namespace Books.API.Profiles
             #region Mapping Left to right
 
             #endregion  
+            CreateMap<LoginRequestDto, UsersDto>();
+            CreateMap<ServiceResponse<LoginResponseDto>, ServiceFailedResponse>();
+
+            CreateMap<RegisterRequestDto, Users>()
+           .ForMember(dest => dest.Password, act => act.Ignore());
+
             CreateMap<ServiceResponse<IEnumerable<BookDto>>, ServiceFailedResponse>();
 
             CreateMap<ServiceResponse<BookDto>, ServiceFailedResponse>();
+            CreateMap<ServiceResponse<GenTokens>, ServiceFailedResponse>();
 
             CreateMap<ServiceResponse<Book?>, ServiceFailedResponse>();
 

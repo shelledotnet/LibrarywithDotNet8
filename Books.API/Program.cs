@@ -3,16 +3,19 @@ using AspNetCoreRateLimit;
 using Books.API.Extensions;
 using Books.API.Filter;
 using Books.API.Filters;
+using Books.Domain.Data;
 using Books.Domain.DbContexts;
 using Books.Domain.Models;
 using Books.Domain.Service;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Swashbuckle.AspNetCore.Filters;
 using System.Configuration;
 using System.Reflection;
+using System.Text;
 using System.Text.Json.Serialization;
 
 
@@ -132,7 +135,8 @@ try
 	builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 	builder.Services.AddScoped<IBooksRepository, BooksRepository>();
-	builder.Services.AddApiVersioning(option =>
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
+    builder.Services.AddApiVersioning(option =>
 	{
 		option.AssumeDefaultVersionWhenUnspecified = true;
 		option.DefaultApiVersion = new ApiVersion(1, 0);
@@ -150,6 +154,54 @@ try
         x.BaseAddress = new Uri(projectOptions.JokesUrl);
         // x.DefaultRequestHeaders = new Dictionary<string,string>
     });
+
+    #region JWT Authentication configuration
+    var tokenvalidationParameter = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ValidIssuer = projectOptions.ValidIssuer,
+        ValidAudience = projectOptions.ValidAudiences[0],
+        RequireExpirationTime = true,  //wants the token to expire we can make it false at development time
+        IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(projectOptions.SecreteKey))
+        //ClockSkew = TimeSpan.Zero
+    };
+    builder.Services.AddSingleton(tokenvalidationParameter);//i register this in ioc-container to be able to re-use this anywhere
+
+    //registeering authentiction service to use JwtBearerDefaults
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    }).AddJwtBearer(jwt =>
+    {
+
+        jwt.TokenValidationParameters = tokenvalidationParameter;
+        jwt.Audience = projectOptions.ValidAudiences[0];
+        jwt.ClaimsIssuer = projectOptions.ValidIssuer;
+
+        #region AppendTokenOnCookies
+        //options.Events = new JwtBearerEvents
+        //{
+        //    OnMessageReceived = ctx =>
+        //    {
+        //        ctx.Request.Cookies.TryGetValue("accessToken", out var accessToken);
+        //        if (!string.IsNullOrEmpty(accessToken))
+        //            ctx.Token = accessToken;
+        //        return Task.CompletedTask;
+        //    }
+        //};
+        #endregion
+
+
+    });
+    #endregion
+
+    builder.Services.AddDbContextFactory<EmployeeManagerDbContext>(
+ opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("IMSConnection")));
 
     #region Rate Limitting
 
