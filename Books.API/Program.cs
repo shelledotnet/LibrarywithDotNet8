@@ -8,7 +8,6 @@ using Books.Domain.DbContexts;
 using Books.Domain.Models;
 using Books.Domain.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
