@@ -20,7 +20,7 @@ namespace Books.API.Controllers;
 [ApiController]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ServiceFailedResponse))]
 [ServiceFilter(typeof(RequestAuthActionFilterAttribute))]
-[TypeFilter(typeof(ApiKeyAuthorizationFilterAttribute))]
+[TypeFilter(typeof(ApiKeyAuthorizationFilterAttribute))]//basicautorization for API
 
 public class BooksController : ControllerBase
 {
@@ -405,7 +405,7 @@ public class BooksController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
-    [HttpGet("getlist-http-client-3"), AllowAnonymous]
+    [HttpGet("get-university-list-3"), AllowAnonymous]
     public async Task<IActionResult> GetList3([FromQuery] CountryDto countryDto)
     {
 
@@ -448,12 +448,6 @@ public class BooksController : ControllerBase
     public async Task<IActionResult> GetList4()
     {
 
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.GetApiResponse());
-        }
-
-        
         try
         {
             await Task.Run(() => _logger.LogInformation("info"));

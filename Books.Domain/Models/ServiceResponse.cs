@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace Books.domain.Models;
 
-    public class ServiceResponse<T>
+    public class ServiceResponse<T> : BaseRespose
     {
         public T? Data { get; set; }
 
         public HttpStatusCode Code { get; set; }
 
-        public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
         public bool IsSuccess { get; set; } = true;
 
         public string? Message { get; set; } 
@@ -26,27 +25,24 @@ namespace Books.domain.Models;
 
         public string Message { get; set; } = "failed";
     }
-    public class ServiceBadResponse
-    {
+    public class ServiceBadResponse : BaseRespose
+{
 
     public int Code { get; set; } = 400;
     public bool IsSuccess { get; set; } = false;
-    public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
 
     public List<string>? Message { get; set; } 
     }
-    public class ServiceMethodNotAailabeResponse
-    {
-        public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
+    public class ServiceMethodNotAailabeResponse : BaseRespose
+{
 
 
         public bool IsSuccess { get; set; } = false;
 
         public string? Message { get; set; }
     }
-    public class ServiceFailedResponse
-    {
-        public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
+    public class ServiceFailedResponse : BaseRespose
+{
 
         public int Code { get; set; }
 
@@ -55,9 +51,8 @@ namespace Books.domain.Models;
         public string? Message { get; set; } 
     }
 
-    public class ServiceForbidenResponse
+    public class ServiceForbidenResponse : BaseRespose
     {
-        public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
     public int Code { get; set; }
 
     public bool IsSuccess { get; set; } = false;
@@ -69,5 +64,11 @@ public class Testla
 {
     public dynamic? Result { get; set; }
 
+
+}
+
+public class BaseRespose
+{
+    public string ResponseId { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfffffff");
 
 }
