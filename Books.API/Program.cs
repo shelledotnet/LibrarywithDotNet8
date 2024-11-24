@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Trace;
 using Serilog;
 using Swashbuckle.AspNetCore.Filters;
 using System.Configuration;
@@ -74,6 +75,25 @@ try
 
 		options.SuppressModelStateInvalidFilter = true;
 	});//for custom message  different from the workload
+
+
+    
+    #region Setup OpenTelemetry Tracing
+    //NuGet\Install-Package OpenTelemetry -Version 1.10.0
+    //    dotnet add package OpenTelemetry
+    //dotnet add package OpenTelemetry.Exporter.OpenTelemetryProtocol
+    //dotnet add package OpenTelemetry.Instrumentation.AspNetCore
+    //dotnet add package OpenTelemetry.Extensions.Hosting
+    builder.Services.AddOpenTelemetry().WithTracing(builder =>
+	{
+		builder
+			// Configure ASP.NET Core Instrumentation
+			.AddAspNetCoreInstrumentation()
+			// Configure OpenTelemetry Protocol (OTLP) Exporter
+			.AddOtlpExporter();
+	}); 
+	#endregion
+
 
 	builder.Services.AddScoped<IClientHeader, ClientHeader>();
 

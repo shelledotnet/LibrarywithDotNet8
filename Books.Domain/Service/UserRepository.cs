@@ -45,8 +45,8 @@ namespace Books.Domain.Service
            if((DateTime.Now > user.DateExpired) && user.Active)
             {
                 user.Active = false;
-                context.Users.Update(user);
-                await context.SaveChangesAsync();
+                context.Users.Update(user);//this keep tract of changes in the entity
+                await context.SaveChangesAsync();//this persist to DB
             }
         }
         
@@ -514,7 +514,7 @@ namespace Books.Domain.Service
                 List<Role> rolesMasters = (from UM in context.Users
                                            join UR in context.Role on UM.Id equals UR.UsersId
                                            join RM in context.Role on UR.Id equals RM.Id
-                where UM.Id == UserId
+                                           where UM.Id == UserId
                                            select RM).ToList();
                 return rolesMasters;
             }
