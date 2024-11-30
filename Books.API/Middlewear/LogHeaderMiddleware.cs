@@ -75,11 +75,11 @@ namespace Books.API.Middlewear
             }
             else
             {
-                context.Request.Headers.Append(key, "");
+                context.Request.Headers.Append(key, "NA");
 
             }
 
-            return "";
+            return "NA";
 
         }
         #endregion
