@@ -29,17 +29,17 @@ var configurationBuilder = new ConfigurationBuilder()
                                 .AddJsonFile("appsettings.Production.json", optional: true, reloadOnChange: true)
                                 .Build();
 
-Log.Logger = new LoggerConfiguration()
-				 .ReadFrom.Configuration(configurationBuilder)
-				 .CreateBootstrapLogger();
-//.CreateLogger(); 
+
 #endregion
 
 try
 {
+    Log.Logger = new LoggerConfiguration()
+                 .ReadFrom.Configuration(configurationBuilder)
+                 .CreateBootstrapLogger();
+    
 
-
-	Log.Information("Books starting up...");
+    Log.Information("Books starting up...");
 
 	#region Add services to the IOC container.
 	var builder = WebApplication.CreateBuilder(args);
@@ -336,7 +336,7 @@ catch (Exception ex)
 {
 	string type = ex.GetType().Name;
 	if (type.Equals("StopTheHostException", StringComparison.OrdinalIgnoreCase)) throw;
-	Log.Fatal("Books failed to start corretly , Host terminated unexpectedly", ex);
+	Log.Fatal($"Books failed to start corretly , Host terminated unexpectedly ex" );
 }
 finally
 {

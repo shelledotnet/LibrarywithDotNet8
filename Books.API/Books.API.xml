@@ -52,6 +52,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Books.API.Controllers.PatientController.Patient(Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            patient records
+            </summary>
+            <param name="registerRequestDto"></param>
+            <returns></returns>
+        </member>
         <member name="M:Books.API.Filter.RequestAuthActionFilterAttribute.Validate">
             <remarks>
             Pattern:<br/>
