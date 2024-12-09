@@ -9,12 +9,19 @@ namespace Books.Domain.Models
 {
     public class ProjectOptions
     {
+
         [Required(AllowEmptyStrings = false)]
-        public string? XApiKey { get; set; }
+        public string? AuthorId { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string? SecreteKey { get; set; }
 
+
+
+        [Required(AllowEmptyStrings = false)]
+        public string? XApiKey { get; set; }
+
+    
         [Required(AllowEmptyStrings = false)]
         public string[]? ValidAudiences { get; set; }
 

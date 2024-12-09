@@ -1,5 +1,6 @@
 using AccountInquiry.API.Extensions;
 using AspNetCoreRateLimit;
+using Books.API.BaxkgroundJobs;
 using Books.API.Extensions;
 using Books.API.Filter;
 using Books.API.Filters;
@@ -29,17 +30,17 @@ var configurationBuilder = new ConfigurationBuilder()
                                 .AddJsonFile("appsettings.Production.json", optional: true, reloadOnChange: true)
                                 .Build();
 
-Log.Logger = new LoggerConfiguration()
-				 .ReadFrom.Configuration(configurationBuilder)
-				 .CreateBootstrapLogger();
-//.CreateLogger(); 
+
 #endregion
 
 try
 {
+    Log.Logger = new LoggerConfiguration()
+                 .ReadFrom.Configuration(configurationBuilder)
+                 .CreateBootstrapLogger();
+    
 
-
-	Log.Information("Books starting up...");
+    Log.Information("Books starting up...");
 
 	#region Add services to the IOC container.
 	var builder = WebApplication.CreateBuilder(args);
@@ -123,8 +124,9 @@ try
 		c.AddSwaggerApiKeySecurity();
 		c.AddSwaggerApiKeyAuthorization();
 		c.OperationFilter<CustomHeaderSwaggerAttribute>();
+        c.OperationFilter<FileUploadOperationFilter>();
 
-		var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 		var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 		c.IncludeXmlComments(xmlPath);
 		c.ExampleFilters();
@@ -260,6 +262,10 @@ try
 
 	#endregion
 
+	#region Background-jobs-Registration
+	builder.Services.AddHostedService<PatientJob>();
+	#endregion
+	
 	#endregion
 
 	#region Middlewear HttpRequest Lands  here this Listent to HttpRequest hirachichally (is the link btw Clients and Server)
@@ -336,7 +342,7 @@ catch (Exception ex)
 {
 	string type = ex.GetType().Name;
 	if (type.Equals("StopTheHostException", StringComparison.OrdinalIgnoreCase)) throw;
-	Log.Fatal("Books failed to start corretly , Host terminated unexpectedly", ex);
+	Log.Fatal($"Books failed to start corretly , Host terminated unexpectedly ex" );
 }
 finally
 {

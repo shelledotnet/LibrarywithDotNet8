@@ -26,7 +26,7 @@ public class BooksController : ControllerBase
 {
     private readonly IBooksRepository _booksRepository;
     private readonly ProjectOptions _projectOptions;
-    private readonly ILogger<BooksRepository> _logger;
+    private readonly ILogger<BooksController> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMapper _mapper;
 
@@ -58,7 +58,7 @@ public class BooksController : ControllerBase
 
 
     public BooksController(IBooksRepository booksRepository, IOptionsMonitor<ProjectOptions> projectOptions,
-            ILogger<BooksRepository> logger, IMapper mapper, IHttpClientFactory httpClientFactory)
+            ILogger<BooksController> logger, IMapper mapper, IHttpClientFactory httpClientFactory)
     {
         _booksRepository = booksRepository ??
             throw new ArgumentNullException(nameof(booksRepository));
