@@ -24,7 +24,11 @@ namespace Books.Domain.Data
         public DbSet<Role> Role => Set<Role>();
         public DbSet<RefereshTokenModels> RefereshTokens => Set<RefereshTokenModels>();
 
+        public DbSet<PatientRecord> PatientRecords => Set<PatientRecord>();
+
         public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
+
+
 
         //Add-Migration importjobs -Context EmployeeManagerDbContext
 

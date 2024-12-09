@@ -43,6 +43,8 @@
     <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.0.0" />
     <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="6.6.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
@@ -51,6 +53,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Books.Domain\Books.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="temp\" />
   </ItemGroup>
 
 </Project>

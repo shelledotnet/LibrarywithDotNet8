@@ -1,4 +1,5 @@
-﻿using Books.API.Extensions;
+﻿using Books.API.BaxkgroundJobs;
+using Books.API.Extensions;
 using Books.API.Filter;
 using Books.domain.Models;
 using Books.Domain.Data;
@@ -8,69 +9,146 @@ using Books.Domain.Migrations;
 using Books.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Net;
 
 namespace Books.API.Controllers
 {
    // [ApiExplorerSettings(IgnoreApi = true)] // Hides from Swagger
     [Produces("application/json", "application/xml")]  //output formatter Media type: Accept header
-    [Consumes("application/json")] //input-formatter Media type: content-type header
+    [Consumes("application/json", "multipart/form-data")] //input-formatter Media type: content-type header
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ServiceFailedResponse))]
     [ServiceFilter(typeof(RequestAuthActionFilterAttribute))]
     [TypeFilter(typeof(ApiKeyAuthorizationFilterAttribute))]//basicautorization for API
-    public class PatientController : ControllerBase
+    public class patientController : ControllerBase
     {
         private readonly EmployeeManagerDbContext _employeeManagerDbContext;
+        private readonly ILogger<patientController> _logger;
 
-        public PatientController(EmployeeManagerDbContext employeeManagerDbContext)
+        public patientController(EmployeeManagerDbContext employeeManagerDbContext, ILogger<patientController> logger)
         {
             _employeeManagerDbContext = employeeManagerDbContext;
+            _logger = logger;
         }
+
+
         /// <summary>
         /// patient records
         /// </summary>
         /// <param name="registerRequestDto"></param>
         /// <returns></returns>
-        [HttpPost("patient-records/import", Name = "books")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
+        [HttpPost("records/import", Name = "patient")]
         public async Task<IActionResult> Patient(IFormFile file)
         {
-            if(file.Length == 0 || !file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                return BadRequest(new { IsSuccess = false, Message = "invalid file , please upload a non-empty CSV file.", Code = 400 });
+                if (file.Length == 0 || !file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new ServiceBadResponse { Message = "invalid file , please upload a non-empty CSV file." });
 
+                }
+
+                using var reader = new StreamReader(file.OpenReadStream());
+                var header = await reader.ReadLineAsync();
+
+                //validate that the header on the file contains required headers
+                var headerValues = (header ?? "").Split(",").Select(x => x.Trim());
+                string[] requiredFields = ["FirstName", "LastName", "Email", "Address", "Phone"];
+                if (!requiredFields.All(x => headerValues.Contains(x)))
+                {
+                    return BadRequest(new ServiceBadResponse { Message = "invalid file , Please upload a CSV FILE with the required field" });
+
+
+
+                }
+
+                //safe file in a Temp Directory
+                Guid jobid = Guid.NewGuid();
+                await SaveFileToTempAsync(file, jobid);
+
+                var job = new ImportJob()
+                {
+                    FileName = $"{jobid}.csv",
+                    DomainId = jobid,
+                    Status = JobStatus.Enqueued,
+                    CreatedAt = DateTime.Now
+                };
+
+                if (await PatientSaveChangesAsync(job))
+                {
+                    ServiceResponse<string> serviceResponse = new()
+                    {
+                        Code = System.Net.HttpStatusCode.OK,
+                        Message = "File upload successfully. Importing patient records...",
+                        Data = jobid.ToString()
+
+                    };
+                    return Ok(serviceResponse);
+                }
+                return BadRequest(new ServiceBadResponse { Message = "issue uploading record" });
             }
-
-            using var reader = new StreamReader(file.OpenReadStream());
-            var header=await reader.ReadLineAsync();
-
-            //validate that the header on the file contains required headers
-            var headerValues = (header ?? "").Split(",").Select(x => x.Trim());
-            string[] requiredFields = ["FirstName", "LastName", "Email", "Address","Phone"];
-            if (!requiredFields.All(x => headerValues.Contains(x)))
+            catch (Exception ex)
             {
-                return BadRequest(new { IsSuccess = false, Message = "invalid file , Please upload a CSV FILE with the required field", Code = 400 });
+                _logger.LogError($"PatientController: {ex}");
+                ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+                return StatusCode(500, serviceResponse);
             }
-
-            //safe file in a Temp Directory
-            Guid jobid=Guid.NewGuid();
-            await SaveFileToTempAsync(file,jobid);
-
-            var job = new ImportJob()
-            {
-                FileName = $"{jobid}.csv",
-                DomainId = jobid,
-                Status = JobStatus.Enqueued,
-                CreatedAt = DateTime.Now
-            };
-            
-            if( await PatientSaveChangesAsync(job))
-            {
-                return Ok(new {id=jobid,message="File upload successfully. Importing patient records..."});
-            }
-            return BadRequest(new { id = jobid, message = "issue uploading patient records..." });
         }
+
+
+        /// <summary>
+        ///get patient records
+        /// </summary>ServiceFailedResponse
+        /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
+        [HttpGet("records/import/{id:guid}", Name = "getpatient")]
+        public async Task<IActionResult> GetPatient(Guid id)
+        {
+            try
+            {
+               
+            var domainId = await  _employeeManagerDbContext.ImportJobs.FirstOrDefaultAsync(job=>job.DomainId.Equals(id));
+                if (domainId != null)
+                {
+                    ServiceResponse<dynamic> serviceResponse = new()
+                    {
+                        Code = System.Net.HttpStatusCode.OK,
+                        Message = "successful",
+                        Data = new
+                        {
+                            status=domainId.Status.ToString(),
+                            createdAt=domainId.CreatedAt,
+                            startedAt=domainId.StartedAt,
+                            updatedAt=domainId.CompletedAt ?? domainId.FailedAt,
+                            notes=domainId.FailureReason?.ToString() != null ? "error uploading patient records, Please contact support " : "patient records were uploaded successfully"
+                        }
+
+                    };
+                    return Ok(serviceResponse);
+                }
+                return NotFound(new ServiceFailedResponse {Code=(int)HttpStatusCode.NotFound, Message = "id not found" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetPatient: {ex}");
+                ServiceFailedResponse serviceResponse = new() { IsSuccess = false, Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message };
+                return StatusCode(500, serviceResponse);
+            }
+        }
+
+
+
+
+
+
+
 
 
         [NonAction]

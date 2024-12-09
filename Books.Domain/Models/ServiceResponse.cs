@@ -31,7 +31,7 @@ namespace Books.domain.Models;
     public int Code { get; set; } = 400;
     public bool IsSuccess { get; set; } = false;
 
-    public List<string>? Message { get; set; } 
+    public string? Message { get; set; } 
     }
     public class ServiceMethodNotAailabeResponse : BaseRespose
 {

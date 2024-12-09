@@ -14,10 +14,11 @@ namespace Books.API.Extensions
 
         public static ServiceBadResponse GetApiResponse(this ModelStateDictionary dictionary)
         {
+            var errorMessages = dictionary.GetErrorMessages();
 
-            return new ServiceBadResponse { IsSuccess = false, Message = GetErrorMessages(dictionary), Code = 400 };
+            return new ServiceBadResponse { IsSuccess = false, Message = string.Join("; ", errorMessages) , Code = 400 };
 
 
-        }
+            }
     }
 }

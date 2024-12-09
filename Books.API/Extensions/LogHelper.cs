@@ -22,11 +22,11 @@ namespace Books.API.Extensions
             {
                 var request = httpContext.Request;
                 ResponseBody responseBody = null;
-                dynamic reqBody = JsonConvert.DeserializeObject<dynamic>(RequestPayload);
-                if (reqBody?.ContainsKey("bvn") == true)
-                    reqBody.bvn = "******";
+                //dynamic reqBody = JsonConvert.DeserializeObject<dynamic>(RequestPayload);
+                //if (reqBody?.ContainsKey("bvn") == true)
+                //    reqBody.bvn = "******";
 
-                RequestPayload = JsonConvert.SerializeObject(reqBody);
+                //RequestPayload = JsonConvert.SerializeObject(RequestPayload);
                 var requestHeader = JsonConvert.SerializeObject(httpContext.Request.Headers);
                 diagnosticContext.Set("RequestHeader", requestHeader);
                 diagnosticContext.Set("RequestBody", RequestPayload);

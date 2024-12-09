@@ -1,5 +1,6 @@
 using AccountInquiry.API.Extensions;
 using AspNetCoreRateLimit;
+using Books.API.BaxkgroundJobs;
 using Books.API.Extensions;
 using Books.API.Filter;
 using Books.API.Filters;
@@ -123,8 +124,9 @@ try
 		c.AddSwaggerApiKeySecurity();
 		c.AddSwaggerApiKeyAuthorization();
 		c.OperationFilter<CustomHeaderSwaggerAttribute>();
+        c.OperationFilter<FileUploadOperationFilter>();
 
-		var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 		var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 		c.IncludeXmlComments(xmlPath);
 		c.ExampleFilters();
@@ -260,6 +262,10 @@ try
 
 	#endregion
 
+	#region Background-jobs-Registration
+	builder.Services.AddHostedService<PatientJob>();
+	#endregion
+	
 	#endregion
 
 	#region Middlewear HttpRequest Lands  here this Listent to HttpRequest hirachichally (is the link btw Clients and Server)
