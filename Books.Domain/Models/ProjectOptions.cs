@@ -170,7 +170,11 @@ namespace Books.Domain.Models
         public string? Period { get; set; }
 
         
+        [Required(AllowEmptyStrings = false)]
+        public string? TurnOnJobs { get; set; }
 
+        [Required(AllowEmptyStrings = false)]
+        public string? DeleteCsv { get; set; }
         #region MyRegion
         //[Required(AllowEmptyStrings = false)]
         //public string? Version { get; set; }

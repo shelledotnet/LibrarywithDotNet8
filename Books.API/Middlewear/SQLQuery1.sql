@@ -7,6 +7,7 @@ order by id desc
 select * from [dbo].[ImportJobs]
 
 select * from [dbo].[PatientRecords]
+Truncate Table [dbo].[ImportJobs]
 
 select * from [dbo].[tbl_errorLog_books]
 order by id desc
