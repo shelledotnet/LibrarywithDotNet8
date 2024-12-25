@@ -1,6 +1,6 @@
 using AccountInquiry.API.Extensions;
 using AspNetCoreRateLimit;
-using Books.API.BaxkgroundJobs;
+using Books.API.BackgroundJobs;
 using Books.API.Extensions;
 using Books.API.Filter;
 using Books.API.Filters;

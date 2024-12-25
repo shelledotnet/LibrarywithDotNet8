@@ -5,7 +5,7 @@ using Books.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Books.API.BaxkgroundJobs
+namespace Books.API.BackgroundJobs
 {
     public class PatientJob : BackgroundService
     {

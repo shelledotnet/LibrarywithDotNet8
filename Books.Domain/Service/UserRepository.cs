@@ -18,6 +18,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Books.Domain.Data;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Books.Domain.Service
 {
@@ -27,16 +28,19 @@ namespace Books.Domain.Service
         private readonly IMapper _mapper;
         private readonly ProjectOptions _projectOptions;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<UserRepository> _logger;
         private readonly TokenValidationParameters _tokenValidationParameters;
 
         public UserRepository(IDbContextFactory<EmployeeManagerDbContext> contextFactory, IMapper mapper,
-            IOptionsMonitor<ProjectOptions> projectOptions, TokenValidationParameters tokenValidationParameters, IHttpContextAccessor httpContextAccessor)
+            IOptionsMonitor<ProjectOptions> projectOptions, TokenValidationParameters tokenValidationParameters
+            , IHttpContextAccessor httpContextAccessor, ILogger<UserRepository> logger)
         {
             this.contextFactory = contextFactory;
             _mapper = mapper;
             _projectOptions = projectOptions.CurrentValue;
             _tokenValidationParameters = tokenValidationParameters;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         //C:\Users\Mohammed.Shelle\AppData\Roaming\Microsoft\UserSecrets\c1d2563a-74d4-4d85-a9fe-13820fd35c88\secrets.json
@@ -61,7 +65,7 @@ namespace Books.Domain.Service
 
 
 
-                Users? user = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == usersDto.Username.Trim().ToLower() && u.Active && u.Blocked == false);
+                Users? user = await context.Users.FirstOrDefaultAsync(u => u.Username!.Trim().ToLower() == usersDto.Username!.Trim().ToLower() && u.Active && !u.Blocked);
                 if (user is null)
                 {
                     response.IsSuccess = false;
@@ -132,7 +136,7 @@ namespace Books.Domain.Service
                     response.IsSuccess = true;
                     response.Message = "IsSuccess";
                 }
-                else if (isPasswordatched == false)
+                else
                 {
                     response.IsSuccess = false;
                     response.Code=HttpStatusCode.Forbidden;
@@ -143,9 +147,7 @@ namespace Books.Domain.Service
             }
             catch (Exception ex)
             {
-
-                string message = $"{ex}";
-                Log.Error(message);
+                Log.Error(ex, "authenticate");
                 response.IsSuccess = false;
                 response.Message = ex.InnerException?.Message != null ? ex.InnerException.Message : ex.Message;
             }
@@ -171,7 +173,8 @@ namespace Books.Domain.Service
             try
             {
 
-                bool isAnyUserActive = await UserAlreadyExists(registerRequestDto.Username, registerRequestDto.Email);
+                #region DedubCheck
+                bool isAnyUserActive = await UserAlreadyExists(registerRequestDto.Username!, registerRequestDto.Email!);
                 if (isAnyUserActive)
                 {
                     response.IsSuccess = false;
@@ -180,6 +183,7 @@ namespace Books.Domain.Service
                     return response;
                 }
 
+                #endregion
 
                 Users users = _mapper.Map<Users>(registerRequestDto);
 
@@ -232,9 +236,9 @@ namespace Books.Domain.Service
             }
             catch (Exception ex)
             {
-                Log.Error($"Register:::{ex}");
+                Log.Error(ex, "Register");
                 response.IsSuccess = false;
-                response.Message = ex.InnerException?.Message != null ? ex.InnerException?.Message : ex.Message;
+                response.Message = ex!.InnerException?.Message != null ? ex.InnerException?.Message : ex.Message;
             }
             return response;
 
@@ -271,7 +275,7 @@ namespace Books.Domain.Service
                 }
                 var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
                 var storedRefershToken = await context.RefereshTokens.SingleOrDefaultAsync(x => x.Token ==
-                SHA512Converter.GenerateSHA512String(refreshTokenRequestDto.RefreshToken));
+                SHA512Converter.GenerateSHA512String(refreshTokenRequestDto.RefreshToken!));
                 if (storedRefershToken == null)
                 {
                     response.IsSuccess = false;
@@ -375,13 +379,13 @@ namespace Books.Domain.Service
             try
             {
                 var context = await contextFactory.CreateDbContextAsync();
-                return await context.Users.AnyAsync(u => u.Username.ToLower() == username.Trim().ToLower()
-                || u.Email.ToLower() == email.ToLower());
+                return await context.Users.AnyAsync(u => u.Username!.ToLower() == username.Trim().ToLower()
+                || u.Email!.ToLower() == email.ToLower());
 
             }
             catch (Exception ex)
             {
-                Log.Error($"UserAlreadyExists:::{ex}");
+                Log.Error(ex,"UserAlreadyExists");
                 return false;
             }
         }
@@ -420,7 +424,7 @@ namespace Books.Domain.Service
                //endeavour not to use sensitive data  pwd
 
               // new Claim(ClaimTypes.NameIdentifier, users.Id.ToString()),
-               new Claim("Id",users.Id.ToString()),
+               new Claim("Id",users!.Id.ToString()),
                new Claim("IsBlocked", users.Blocked.ToString()),
                 new Claim("IsActive", users.Active.ToString()),
                new Claim(JwtRegisteredClaimNames.Sub,users.Email ?? ""),
@@ -432,7 +436,7 @@ namespace Books.Domain.Service
 
             foreach (Role? item in GetUserRole(users.Id, context))
             {
-                claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, item.Name));
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, item.Name!));
             }
 
 
@@ -487,7 +491,7 @@ namespace Books.Domain.Service
         }
         private static void CreateRefreshToken(Users user, SecurityToken token, EmployeeManagerDbContext context, out string createToken, out RefereshTokenModels refershToken)
         {
-           // createToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+           //createToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
             createToken = RandomString(100);
             refershToken = new RefereshTokenModels()
             {
@@ -553,7 +557,7 @@ namespace Books.Domain.Service
 
 
         //this validate token b4 using it to get referesh token
-        private ClaimsPrincipal GetPrincipalFromToken(string token)
+        private ClaimsPrincipal? GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             try
@@ -568,6 +572,7 @@ namespace Books.Domain.Service
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "GetPrincipalFromToken");
                 return null;
             }
         }
