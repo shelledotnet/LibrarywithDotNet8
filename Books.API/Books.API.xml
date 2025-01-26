@@ -65,6 +65,12 @@
              </summary>ServiceFailedResponse
              <returns></returns>
         </member>
+        <member name="M:Books.API.Controllers.StudentController.GetStudentName">
+             <summary>
+            get patient records
+             </summary>ServiceFailedResponse
+             <returns></returns>
+        </member>
         <member name="M:Books.API.Filter.RequestAuthActionFilterAttribute.Validate">
             <remarks>
             Pattern:<br/>
