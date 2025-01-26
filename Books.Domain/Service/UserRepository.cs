@@ -65,7 +65,7 @@ namespace Books.Domain.Service
 
 
 
-                Users? user = await context.Users.FirstOrDefaultAsync(u => u.Username!.Trim().ToLower() == usersDto.Username!.Trim().ToLower() && u.Active && !u.Blocked);
+                Users? user = await context.Users.FirstOrDefaultAsync(u => u.Username!.Trim().Equals(usersDto.Username!.Trim(), StringComparison.CurrentCultureIgnoreCase) && u.Active && !u.Blocked);
                 if (user is null)
                 {
                     response.IsSuccess = false;
@@ -74,19 +74,8 @@ namespace Books.Domain.Service
                     return response;
                 }
                 else if (user is not null)
-                {
-                    switch (user.Active)
-                    {
-                        case true:
-                            await DeActivateUser(user, context);
-                            break;
-                        case false:
-                            response.IsSuccess = false;
-                            response.Code=HttpStatusCode.Locked;
-                            response.Message = _projectOptions.UserStatus?[1];
-                            return response;
-                    }
-                }
+                    await DeActivateUser(user, context);
+
                 #region CompareForPasswordSalt-Match
                 //var passwordHash = HashingHelper.HashUsingPbkdf2(usersDto.Password, user.PasswordSalt); 
                 //if (usersDto.Password != passwordHash)
