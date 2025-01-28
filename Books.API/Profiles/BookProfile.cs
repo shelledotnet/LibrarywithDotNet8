@@ -30,6 +30,9 @@ namespace Books.API.Profiles
 
             CreateMap<ServiceResponse<ProductDto>, ServiceFailedResponse>();
 
+            CreateMap<StudentForCreation, Student>();
+
+
             CreateMap<Book, BookDto>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src =>
                 $"{src.Author.FirstName} {src.Author.LastName}"))
