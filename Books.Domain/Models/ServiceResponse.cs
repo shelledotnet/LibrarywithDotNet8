@@ -17,8 +17,8 @@ namespace Books.domain.Models;
 
         public string? Message { get; set; } 
     }
-    public class ServiceResponse
-    {
+    public class ServiceResponse : BaseRespose
+{
 
 
         public bool IsSuccess { get; set; } = false;

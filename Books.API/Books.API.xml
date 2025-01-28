@@ -67,9 +67,33 @@
         </member>
         <member name="M:Books.API.Controllers.StudentController.GetStudentName">
              <summary>
-            get patient records
-             </summary>ServiceFailedResponse
+            get student records
+             </summary>
              <returns></returns>
+        </member>
+        <member name="M:Books.API.Controllers.StudentController.GetStudentById(System.Int32)">
+             <summary>
+            get a student records by Id
+             </summary>
+             <returns>200</returns>
+        </member>
+        <member name="M:Books.API.Controllers.StudentController.GetStudentByName(System.String)">
+             <summary>
+            get a student records by name
+             </summary>
+             <returns>200</returns>
+        </member>
+        <member name="M:Books.API.Controllers.StudentController.DeleteStudentById(System.Int32)">
+             <summary>
+            delete  student records by Id
+             </summary>
+             <returns>204</returns>
+        </member>
+        <member name="M:Books.API.Controllers.StudentController.CreateStudent(Books.Domain.Models.StudentForCreation)">
+             <summary>
+            get a student records by name
+             </summary>
+             <returns>200</returns>
         </member>
         <member name="M:Books.API.Filter.RequestAuthActionFilterAttribute.Validate">
             <remarks>
