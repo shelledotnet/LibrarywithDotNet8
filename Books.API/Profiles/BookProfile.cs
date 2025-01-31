@@ -32,6 +32,7 @@ namespace Books.API.Profiles
 
             CreateMap<StudentForCreation, Student>();
 
+            CreateMap<Student, StudentResponseDto>();
 
             CreateMap<Book, BookDto>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src =>
