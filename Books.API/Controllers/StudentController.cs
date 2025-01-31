@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Bogus.DataSets;
 using Books.API.Filter;
 using Books.domain.Models;
 using Books.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace Books.API.Controllers
@@ -13,6 +15,7 @@ namespace Books.API.Controllers
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ServiceFailedResponse))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ServiceFailedResponse))]
     [ServiceFilter(typeof(RequestAuthActionFilterAttribute))]
     [TypeFilter(typeof(ApiKeyAuthorizationFilterAttribute))]//basicautorization for API
     public class StudentController : ControllerBase
@@ -37,19 +40,29 @@ namespace Books.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet(Name = "GetStudentName")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<Student>>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<StudentResponseDto>>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
         public IActionResult GetStudentName()
         {
-            return Ok(new ServiceResponse<IEnumerable<Student>>
+            List<Student> listStudent = CollegeRepository.Student;
+            if (listStudent.Count > 0)
+                return Ok(new ServiceResponse<IEnumerable<StudentResponseDto>>
+                {
+                    Code = System.Net.HttpStatusCode.OK,
+                    IsSuccess = true,
+                    Message = "successful",
+                    Data = _mapper.Map<List<StudentResponseDto>>(listStudent)
+
+                });
+            return NotFound(new ServiceFailedResponse
             {
-                Code = System.Net.HttpStatusCode.OK,
-                IsSuccess = true,
-                Message = "successful",
-                Data = CollegeRepository.Student
+                Code = (int)System.Net.HttpStatusCode.NotFound,
+                IsSuccess = false,
+                Message = "student not found"
 
             });
+
         }
 
         /// <summary>
@@ -57,26 +70,26 @@ namespace Books.API.Controllers
         /// </summary>
         /// <returns>200</returns>
         [HttpGet("{id:int:min(1):max(1114)}", Name = "GetStudentById")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<Student>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<StudentResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ServiceFailedResponse))]
-        public IActionResult GetStudentById([FromRoute] int id)
+        public IActionResult GetStudentById([FromRoute]int id)
         {
             Student student = CollegeRepository.Student.FirstOrDefault(student => student.Id.Equals(id));
             if (student != null)
-                return Ok(new ServiceResponse<Student>
+                return Ok(new ServiceResponse<StudentResponseDto>
                 {
                     Code = System.Net.HttpStatusCode.OK,
                     IsSuccess = true,
                     Message = "successful",
-                    Data = student
+                    Data = _mapper.Map<StudentResponseDto>(student)
 
                 });
             return NotFound(new ServiceFailedResponse
             {
                 Code = (int)System.Net.HttpStatusCode.NotFound,
                 IsSuccess = false,
-                Message = "failed"
+                Message = $"The student with Id: {id} not found"
 
             });
         }
@@ -94,18 +107,33 @@ namespace Books.API.Controllers
         public IActionResult GetStudentByName([FromRoute] string name)
         {
             Student student = CollegeRepository.Student.FirstOrDefault(student => student.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (student != null)
-                return Ok(new ServiceResponse<Student>
+            try
+            {
+                if (student != null)
+                    return Ok(new ServiceResponse<Student>
+                    {
+                        Code = System.Net.HttpStatusCode.OK,
+                        IsSuccess = true,
+                        Message = "successful",
+                        Data = student
+
+                    });
+                return NotFound(new ServiceFailedResponse
                 {
-                    Code = System.Net.HttpStatusCode.OK,
-                    IsSuccess = true,
-                    Message = "successful",
-                    Data = student
+                    Code = (int)System.Net.HttpStatusCode.NotFound,
+                    IsSuccess = false,
+                    Message = $"The student with name {name} not found"
 
                 });
-            return NotFound(new ServiceFailedResponse
+            }
+            catch (Exception ex)
             {
-                Code = (int)System.Net.HttpStatusCode.NotFound,
+                _logger.LogError(ex, nameof(GetStudentByName));
+
+            }
+            return StatusCode(500, new ServiceFailedResponse
+            {
+                Code = (int)System.Net.HttpStatusCode.InternalServerError,
                 IsSuccess = false,
                 Message = "failed"
 
@@ -146,7 +174,7 @@ namespace Books.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "DeleteStudentById");
+                _logger.LogError(ex, nameof(DeleteStudentById));
             }
             return StatusCode(500, new ServiceFailedResponse
             {
@@ -168,9 +196,25 @@ namespace Books.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ServiceBadResponse))]
         public IActionResult CreateStudent([FromBody] StudentForCreation student)
         {
-            var addedStudent = Add(student);
-            return CreatedAtAction(nameof(GetStudentById), new { id = addedStudent.Id }, addedStudent);
+            try
+            {
+                var addedStudent = Add(student);
+                return CreatedAtAction(nameof(GetStudentById), new { id = addedStudent.Id }, addedStudent);
 
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError(ex, nameof(CreateStudent));
+
+            }
+            return StatusCode(500, new ServiceFailedResponse
+            {
+                Code = (int)System.Net.HttpStatusCode.InternalServerError,
+                IsSuccess = false,
+                Message = "failed"
+
+            });
         }
 
         [NonAction]
